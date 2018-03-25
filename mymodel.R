@@ -9,13 +9,13 @@ data=read.csv("D:/R/eddypro.csv", skip=1, na=c("","NA","-9999","-9999.0"),commen
 ##Удаляем первую строку таблицы
 data = data[-1,]
 data
-## Смотрим информацию по колонкам
+## Просмотрим все переменные
 glimpse(data)
 ## Убираем ненужную переменную roll
 data = select(data, -(roll))
 ## Преобразуем в факторы переменные типа char, которые содержат повторяющиеся значения:
 data = data %>% mutate_if(is.character, factor)
-## Устраняем проблему со знаками в переменных
+## Заменяем ненужные символы для упрощения работы с данными
 library(stringr)
 names(data) =  str_replace_all(names(data), "[!]","_emph_")
 names(data) = names(data) %>% 
@@ -49,31 +49,37 @@ cor_td = cor(data_numeric)
 cor_td
 ## Избавляемся от всех строк, где есть хоть одно значение NA
 cor_td = cor(drop_na(data_numeric))
-cor_td = cor(drop_na(data_numeric)) %>% as.data.frame %>% select(ho2_flux)
+cor_td = cor(drop_na(data_numeric)) %>% as.data.frame %>% select(h2o_flux)
 vars = row.names(cor_td)[cor_td$h2o_flux^2 > .2] %>% na.exclude
 vars
 ##  Собираем все переменные из вектора с именнами переменных в одну формулу
-formula = as.formula(paste("ho2_flux~", paste(vars,collapse = "+"), sep=""))
+formula = as.formula(paste("h2o_flux~", paste(vars,collapse = "+"), sep=""))
 formula
 ##Собственно линейная модель
-my.model = lm(ho2_flux ~ Tau + rand_err_Tau + H + rand_err_H + LE + qc_LE + 
+my.model = lm(h2o_flux ~ Tau + rand_err_Tau + H + rand_err_H + LE + qc_LE + 
                 rand_err_LE + co2_flux + h2o_flux + qc_h2o_flux + rand_err_h2o_flux + 
                 h2o_time_lag + sonic_temperature + air_temperature + air_density + 
                 air_molar_volume + es + RH + VPD + u. + TKE + T. + un_Tau + 
                 un_H + un_LE + un_co2_flux + un_h2o_flux + u_var + v_var + 
                 w_var + h2o_var + w.ts_cov + w.co2_cov + w.h2o_cov + flowrate,
-              data = teaching_data_unq)
+              data = testing_data_unq)
 summary(my.model)
-##anova R2 выкидываем переменные
 anova(my.model)
-##взаимодействия второго ранга выкидываем переменные взаимодействия
-
-
-## Проверка
-pred.model1 = predict(my.model, newdata = testing_data_unq)
-summary(pred.model1)
-library(ithir)
-goofcat(observed = data$co2_flux[training], predicted = my.model)
-#Проверка модели на независимой (контрольной) выборке
-V.pred.my.model1 <- predict(my.model, newdata = data[-training, ])
-goofcat(observed = data$co2_flux[-training], predicted = my.model)
+my.model2 = lm(h2o_flux ~ Tau + rand_err_Tau + H + rand_err_H + LE + qc_LE + 
+                 rand_err_LE + co2_flux + h2o_flux + qc_h2o_flux + rand_err_h2o_flux + 
+                 h2o_time_lag + sonic_temperature + air_temperature + air_density + 
+                 air_molar_volume + es + RH + VPD + u. + TKE + T. + un_Tau + 
+                 un_H + un_LE + un_co2_flux + un_h2o_flux + u_var + v_var + 
+                 w_var + h2o_var + w.ts_cov + w.co2_cov + w.h2o_cov + flowrate,
+               data = testing_data_unq)
+summary(my.model2)
+anova(my.model2)
+my.model3 = lm(h2o_flux ~ Tau + rand_err_Tau + H + rand_err_H + LE + qc_LE + 
+                 rand_err_LE + co2_flux + h2o_flux + qc_h2o_flux + rand_err_h2o_flux + 
+                 h2o_time_lag + sonic_temperature + air_temperature + air_density + 
+                 air_molar_volume + es + RH + VPD + u. + TKE + T. + un_Tau + 
+                 un_H + un_LE + un_co2_flux + un_h2o_flux + u_var + v_var + 
+                 w_var + h2o_var + w.ts_cov + w.co2_cov + w.h2o_cov + flowrate,
+               data = testing_data_unq)
+summary(my.model3)
+anova(my.model3)
