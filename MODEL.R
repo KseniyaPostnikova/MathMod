@@ -15,7 +15,6 @@ glimpse(data)
 data = select(data, -(roll))
 ## Оставляем только весенние месяцы
 filter(data, DOY>90 & DOY<150)
-filter(data, daytime==FALSE)
 ## Преобразуем в факторы переменные типа char, которые содержат повторяющиеся значения:
 data = data %>% mutate_if(is.character, factor)
 ## Заменяем ненужные символы для упрощения работы с данными
